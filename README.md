@@ -1,4 +1,4 @@
-# WEIRD ROOMS - Level 0
+# WEIRD ROOMS
 
 A 3D horror exploration game inspired by the backrooms concept. Players navigate through an infinite, unsettling space filled with yellow walls and pillars, collecting useful items while exploring the endless maze. Features realistic collision detection and a survival system.
 
