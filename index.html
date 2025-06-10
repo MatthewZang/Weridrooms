@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEIRD ROOMS - Level 0</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ffff00;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        #inventory {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #ffff00;
+        }
+        
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #ffff00;
+            z-index: 100;
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: #ffff00;
+        }
+        
+        #crosshair::before {
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            transform: translateX(-50%);
+        }
+        
+        #crosshair::after {
+            top: 50%;
+            left: 0;
+            height: 2px;
+            width: 100%;
+            transform: translateY(-50%);
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffff00;
+            font-size: 24px;
+            z-index: 200;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="loading">Loading The Backrooms...</div>
+        
+        <div id="ui">
+            <div id="inventory">
+                <h3>Inventory</h3>
+                <div id="itemCount">Items: 0</div>
+                <div id="itemList"></div>
+            </div>
+        </div>
+        
+        <div id="crosshair"></div>
+        
+        <div id="instructions">
+            <div class="instructions">
+                <h2>Controls</h2>
+                <ul>
+                    <li><strong>WASD</strong> - Move (W=Backward, S=Forward, A=Left, D=Right)</li>
+                    <li><strong>Mouse</strong> - Look around (click to lock cursor)</li>
+                    <li><strong>Shift</strong> - Sprint (drains energy)</li>
+                    <li><strong>Space</strong> - Jump</li>
+                    <li><strong>E</strong> - Collect nearby items</li>
+                    <li><strong>F</strong> - Enter doors (when nearby)</li>
+                    <li><strong>Q</strong> - Drop oldest item</li>
+                    <li><strong>1, 2, 3</strong> - Use items</li>
+                </ul>
+                
+                <h3>Inventory Limit: 5 items max</h3>
+                <p>Strategic item management required!</p>
+                
+                <h3>Levels</h3>
+                <ul>
+                    <li><strong>Level 0:</strong> Classic yellow backrooms</li>
+                    <li><strong>Pool Rooms:</strong> Indoor pools with inaccessible stairs</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html> 
