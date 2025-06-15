@@ -422,190 +422,92 @@ class BackroomsGame {
         const room = new THREE.Group();
         const offsetX = roomX * this.roomSize;
         const offsetZ = roomZ * this.roomSize;
-
-        // Dark hall materials with slightly brighter colors
         const darkFloorMaterial = new THREE.MeshLambertMaterial({ color: 0x1a1a1a });
         const darkCeilingMaterial = new THREE.MeshLambertMaterial({ color: 0x151515 });
         const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x202020 });
-
-        // Narrow hallway dimensions
         const hallwayWidth = 4;
         const wallHeight = 8;
-
-        // Floor (narrow)
+        const margin = 4;
         const floorGeometry = new THREE.PlaneGeometry(this.roomSize, hallwayWidth);
         const floor = new THREE.Mesh(floorGeometry, darkFloorMaterial);
         floor.rotation.x = -Math.PI / 2;
         floor.position.set(offsetX + this.roomSize/2, 0, offsetZ + this.roomSize/2);
         floor.receiveShadow = true;
         room.add(floor);
-
-        // Ceiling (narrow)
         const ceiling = new THREE.Mesh(floorGeometry, darkCeilingMaterial);
         ceiling.rotation.x = Math.PI / 2;
         ceiling.position.set(offsetX + this.roomSize/2, wallHeight, offsetZ + this.roomSize/2);
         room.add(ceiling);
-
-        // Side walls
         const leftWall = new THREE.Mesh(
-            new THREE.BoxGeometry(this.roomSize, wallHeight, 0.5),
-            wallMaterial
+            new THREE.BoxGeometry(this.roomSize, wallHeight, 0.5), wallMaterial
         );
-        leftWall.position.set(
-            offsetX + this.roomSize/2,
-            wallHeight/2,
-            offsetZ + this.roomSize/2 - hallwayWidth/2
-        );
+        leftWall.position.set(offsetX + this.roomSize/2, wallHeight/2, offsetZ + this.roomSize/2 - hallwayWidth/2);
         room.add(leftWall);
-        this.collidableObjects.push({
-            position: leftWall.position.clone(),
-            size: { x: this.roomSize, y: wallHeight, z: 0.5 },
-            type: 'wall'
-        });
-
+        this.collidableObjects.push({ position: leftWall.position.clone(), size: { x: this.roomSize, y: wallHeight, z: 0.5 }, type: 'wall' });
         const rightWall = new THREE.Mesh(
-            new THREE.BoxGeometry(this.roomSize, wallHeight, 0.5),
-            wallMaterial
+            new THREE.BoxGeometry(this.roomSize, wallHeight, 0.5), wallMaterial
         );
-        rightWall.position.set(
-            offsetX + this.roomSize/2,
-            wallHeight/2,
-            offsetZ + this.roomSize/2 + hallwayWidth/2
-        );
+        rightWall.position.set(offsetX + this.roomSize/2, wallHeight/2, offsetZ + this.roomSize/2 + hallwayWidth/2);
         room.add(rightWall);
-        this.collidableObjects.push({
-            position: rightWall.position.clone(),
-            size: { x: this.roomSize, y: wallHeight, z: 0.5 },
-            type: 'wall'
-        });
-
-        // Add misty fog effect (reduced density for better visibility)
+        this.collidableObjects.push({ position: rightWall.position.clone(), size: { x: this.roomSize, y: wallHeight, z: 0.5 }, type: 'wall' });
         room.fog = new THREE.FogExp2(0x000000, 0.12);
-
-        // Add brighter lighting
         const mainLight = new THREE.PointLight(0x2a2a2a, 0.7, 15);
-        mainLight.position.set(
-            offsetX + this.roomSize/2,
-            wallHeight - 1,
-            offsetZ + this.roomSize/2
-        );
+        mainLight.position.set(offsetX + this.roomSize/2, wallHeight - 1, offsetZ + this.roomSize/2);
         room.add(mainLight);
-
-        // Add subtle ambient light
         const ambientLight = new THREE.AmbientLight(0x202020, 0.2);
         room.add(ambientLight);
-
-        // Add doors based on walking time
+        // --- Door logic ---
         if (this.walkTimer > 0) {
-            // Regular room doors every 5 seconds (now water-style)
+            // Water door every 5 seconds
             if (Math.floor(this.walkTimer) % 5 === 0) {
-                const waterDoorMaterial = new THREE.MeshLambertMaterial({
-                    color: 0x00aaff,
-                    transparent: true,
-                    opacity: 0.8
-                });
-                const door = new THREE.Mesh(
-                    new THREE.BoxGeometry(2, 6, 0.3),
-                    waterDoorMaterial
-                );
-
-                // Position door on one of the side walls
+                const rand = Math.random();
+                let destination = 'random';
+                let color = 0x00aaff;
+                let message = 'Press F to enter a random level through the water door';
+                if (rand < 0.1) {
+                    destination = 'poolrooms';
+                    color = 0x00bfff;
+                    message = 'Press F to enter the Pool Rooms';
+                } else if (rand < 0.2) {
+                    destination = 'backrooms';
+                    color = 0xffcc00;
+                    message = 'Press F to return to the Backrooms';
+                }
+                const waterDoorMaterial = new THREE.MeshLambertMaterial({ color: color, transparent: true, opacity: 0.8 });
+                const door = new THREE.Mesh(new THREE.BoxGeometry(2, 6, 0.3), waterDoorMaterial);
                 const onLeftWall = Math.random() < 0.5;
                 door.position.set(
-                    offsetX + Math.random() * (this.roomSize - 4) + 2, // Random position along hallway
-                    3, // Height
-                    offsetZ + this.roomSize/2 + (onLeftWall ? -hallwayWidth/2 : hallwayWidth/2) // Left or right wall
+                    offsetX + margin + Math.random() * (this.roomSize - 2 * margin),
+                    3,
+                    offsetZ + this.roomSize/2 + (onLeftWall ? -hallwayWidth/2 : hallwayWidth/2)
                 );
-                door.rotation.y = onLeftWall ? Math.PI : 0; // Face into hallway
-                
-                door.userData = { 
-                    type: 'water_door',
-                    destination: 'random'
-                };
+                door.rotation.y = onLeftWall ? Math.PI : 0;
+                door.userData = { type: 'water_door', destination: destination, message: message };
                 room.add(door);
                 this.doors.push(door);
-
-                // Add water door glow effect
-                const doorLight = new THREE.PointLight(0x00ffff, 0.8, 5);
+                const doorLight = new THREE.PointLight(color, 0.8, 5);
                 doorLight.position.copy(door.position);
                 room.add(doorLight);
-
-                // Add water particles
-                for (let i = 0; i < 5; i++) {
-                    const particleGeometry = new THREE.SphereGeometry(0.1, 4, 4);
-                    const particleMaterial = new THREE.MeshBasicMaterial({
-                        color: 0x00ffff,
-                        transparent: true,
-                        opacity: 0.6
-                    });
-                    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-                    const angle = (i / 5) * Math.PI * 2;
-                    const radius = 1.5;
-                    particle.position.set(
-                        door.position.x + Math.cos(angle) * radius,
-                        door.position.y + Math.sin(Date.now() * 0.001 + i),
-                        door.position.z + Math.sin(angle) * radius
-                    );
-                    room.add(particle);
-                }
             }
-
-            // Teleport doors with 25% chance every 30 seconds (enhanced water effect)
+            // Teleport door every 30s, 25% chance
             if (this.walkTimer >= 30 && Math.random() < 0.25) {
-                const teleportDoorMaterial = new THREE.MeshLambertMaterial({
-                    color: 0x00ff88,
-                    transparent: true,
-                    opacity: 0.9,
-                    emissive: 0x00ff88,
-                    emissiveIntensity: 0.5
-                });
-                const teleportDoor = new THREE.Mesh(
-                    new THREE.BoxGeometry(2, 6, 0.3),
-                    teleportDoorMaterial
-                );
-
-                // Position teleport door on one of the side walls
+                const teleportDoorMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff88, transparent: true, opacity: 0.9, emissive: 0x00ff88, emissiveIntensity: 0.5 });
+                const teleportDoor = new THREE.Mesh(new THREE.BoxGeometry(2, 6, 0.3), teleportDoorMaterial);
                 const onLeftWall = Math.random() < 0.5;
                 teleportDoor.position.set(
-                    offsetX + Math.random() * (this.roomSize - 4) + 2, // Random position along hallway
-                    3, // Height
-                    offsetZ + this.roomSize/2 + (onLeftWall ? -hallwayWidth/2 : hallwayWidth/2) // Left or right wall
+                    offsetX + margin + Math.random() * (this.roomSize - 2 * margin),
+                    3,
+                    offsetZ + this.roomSize/2 + (onLeftWall ? -hallwayWidth/2 : hallwayWidth/2)
                 );
-                teleportDoor.rotation.y = onLeftWall ? Math.PI : 0; // Face into hallway
-
-                teleportDoor.userData = { 
-                    type: 'teleport_door',
-                    destination: 'random'
-                };
+                teleportDoor.rotation.y = onLeftWall ? Math.PI : 0;
+                teleportDoor.userData = { type: 'teleport_door', destination: 'random', message: 'Press F to teleport to a random level' };
                 room.add(teleportDoor);
                 this.doors.push(teleportDoor);
-
-                // Enhanced glow effect
                 const glow = new THREE.PointLight(0x00ff88, 1.2, 8);
                 glow.position.copy(teleportDoor.position);
                 room.add(glow);
-
-                // Add more water particles for teleport door
-                for (let i = 0; i < 8; i++) {
-                    const particleGeometry = new THREE.SphereGeometry(0.15, 4, 4);
-                    const particleMaterial = new THREE.MeshBasicMaterial({
-                        color: 0x00ff88,
-                        transparent: true,
-                        opacity: 0.7
-                    });
-                    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-                    const angle = (i / 8) * Math.PI * 2;
-                    const radius = 2;
-                    particle.position.set(
-                        teleportDoor.position.x + Math.cos(angle) * radius,
-                        teleportDoor.position.y + Math.sin(Date.now() * 0.001 + i) * 1.5,
-                        teleportDoor.position.z + Math.sin(angle) * radius
-                    );
-                    room.add(particle);
-                }
             }
         }
-
         this.scene.add(room);
         this.rooms.set(`${roomX},${roomZ}`, room);
     }
@@ -1116,51 +1018,76 @@ class BackroomsGame {
 
     checkDoorInteraction() {
         const playerPos = this.player.position;
-        
+        let found = false;
         for (const door of this.doors) {
-            // Get the actual door position from the mesh
             const doorPosition = door.position || door.mesh?.position;
             if (!doorPosition) continue;
-
             const distance = playerPos.distanceTo(doorPosition);
             if (distance < 3) {
-                if (door.userData?.type === 'water_door') {
+                found = true;
+                if (door.userData?.message) {
+                    this.showMessage(door.userData.message);
+                } else if (door.userData?.type === 'water_door') {
                     this.showMessage('Press F to enter a random level through the water door');
                 } else if (door.userData?.type === 'teleport_door') {
                     this.showMessage('Press F to teleport to a random level');
+                } else {
+                    this.showMessage('Press F to enter the door');
                 }
                 return door;
             }
+        }
+        if (!found) {
+            // Optionally clear any previous message
         }
         return null;
     }
 
     enterDoor(door) {
-        if (door.userData.type === 'teleport_door' || door.userData.type === 'water_door') {
-            // Select random level (excluding current level)
-            const availableLevels = this.availableLevels.filter(level => level.id !== this.currentLevel);
-            const randomLevel = availableLevels[Math.floor(Math.random() * availableLevels.length)];
-            this.currentLevel = randomLevel.id;
-            this.showMessage(`Teleporting to ${randomLevel.name}...`);
-        } else if (door.userData.destination === 'poolrooms') {
-            this.currentLevel = 1;
-            this.showMessage('Entering Pool Rooms...');
-        } else if (door.userData.destination === 'backrooms') {
-            this.currentLevel = 0;
-            this.showMessage('Returning to Backrooms Level 0...');
+        if (!door) {
+            this.showMessage('This door cannot be entered.');
+            return;
         }
         
-        // Clear current world
+        // Handle new door structure (from createDarkHallRoom)
+        if (door.userData) {
+            if (door.userData.type === 'teleport_door' || door.userData.type === 'water_door') {
+                if (door.userData.destination === 'poolrooms') {
+                    this.currentLevel = 1;
+                    this.showMessage('Entering Pool Rooms...');
+                } else if (door.userData.destination === 'backrooms') {
+                    this.currentLevel = 0;
+                    this.showMessage('Returning to Backrooms Level 0...');
+                } else {
+                    // Random teleport
+                    const availableLevels = this.availableLevels.filter(level => level.id !== this.currentLevel);
+                    const randomLevel = availableLevels[Math.floor(Math.random() * availableLevels.length)];
+                    this.currentLevel = randomLevel.id;
+                    this.showMessage(`Teleporting to ${randomLevel.name}...`);
+                }
+            }
+        }
+        // Handle legacy door structure (from createDoor function)
+        else if (door.destination) {
+            if (door.destination === 'poolrooms') {
+                this.currentLevel = 1;
+                this.showMessage('Entering Pool Rooms...');
+            } else if (door.destination === 'backrooms') {
+                this.currentLevel = 0;
+                this.showMessage('Returning to Backrooms Level 0...');
+            } else {
+                // Random teleport
+                const availableLevels = this.availableLevels.filter(level => level.id !== this.currentLevel);
+                const randomLevel = availableLevels[Math.floor(Math.random() * availableLevels.length)];
+                this.currentLevel = randomLevel.id;
+                this.showMessage(`Teleporting to ${randomLevel.name}...`);
+            }
+        }
+        
         this.clearWorld();
-        
-        // Reset player position
         this.player.position.set(25, 1, 25);
-        
-        // Reset walk timer for new level
         this.walkTimer = 0;
         this.hasWalkedEnough = false;
-        
-        // Generate new rooms for the new level
         this.generateRooms();
     }
 
