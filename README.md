@@ -1,6 +1,6 @@
-# WEIRD ROOMS - Level 0
+# WEIRD ROOMS (WARNING, THIS GAME MIGHT CONTAIN FLASHING LIGHTS AND ENTITIES THAT WILL MAKE A JUMP SCARE WHEN THEY GET YOU LATER)
 
-A 3D horror exploration game inspired by the backrooms concept. Players navigate through an infinite, unsettling space filled with yellow walls and pillars, collecting useful items while exploring the endless maze. Features realistic collision detection and a survival system.
+A 3D horror exploration game inspired by the backrooms concept. Players navigate through an infinite, unsettling space filled with yellow walls and pillars, collecting useful items while exploring the endless maze. Features realistic collision detection and a survival system. Do not use ones that haven't deployed properly.
 
 ## New Features ✨
 
@@ -91,4 +91,4 @@ Built with vanilla JavaScript and Three.js:
 - `index.html` - Game interface and styling
 - `game.js` - Core game logic, physics, and rendering
 
-The game uses modern web technologies for 3D graphics and runs entirely client-side with no backend required. 
+The game uses modern web technologies for 3D graphics and runs entirely client-side with no backend required.
